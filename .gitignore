@@ -5,3 +5,9 @@ bbox_result
 *.csv
 prep_result
 hymenoptera_data
+
+DenB/test
+DenB/train
+
+# for the time being, don't git dx100, as I am not clear what it is about
+dx100
