@@ -71,57 +71,6 @@ def resample(image, scan, new_spacing=[1,1,1]):
     
     return image, new_spacing
 
-def largest_label_volume(im, bg=-1):
-    vals, counts = np.unique(im, return_counts=True)
-
-    counts = counts[vals != bg]
-    vals = vals[vals != bg]
-
-    if len(counts) > 0:
-        return vals[np.argmax(counts)]
-    else:
-        return None
-
-def segment_lung_mask(image, fill_lung_structures=True):
-    
-    # not actually binary, but 1 and 2. 
-    # 0 is treated as background, which we do not want
-    binary_image = np.array(image > -320, dtype=np.int8)+1
-    labels = measure.label(binary_image)
-    
-    # Pick the pixel in the very corner to determine which label is air.
-    #   Improvement: Pick multiple background labels from around the patient
-    #   More resistant to "trays" on which the patient lays cutting the air 
-    #   around the person in half
-    background_label = labels[0,0,0]
-    
-    #Fill the air around the person
-    binary_image[background_label == labels] = 2
-    
-    
-    # Method of filling the lung structures (that is superior to something like 
-    # morphological closing)
-    if fill_lung_structures:
-        # For every slice we determine the largest solid structure
-        for i, axial_slice in enumerate(binary_image):
-            axial_slice = axial_slice - 1
-            labeling = measure.label(axial_slice)
-            l_max = largest_label_volume(labeling, bg=0)
-            
-            if l_max is not None: #This slice contains some lung
-                binary_image[i][labeling != l_max] = 1
-
-    
-    binary_image -= 1 #Make the image actual binary
-    binary_image = 1-binary_image # Invert it, lungs are now 1
-    
-    # Remove other air pockets insided body
-    labels = measure.label(binary_image, background=0)
-    l_max = largest_label_volume(labels, bg=0)
-    if l_max is not None: # There are air pockets
-        binary_image[labels != l_max] = 0
- 
-    return binary_image
 
 def plot_3d(image, threshold=-300):
     
@@ -146,7 +95,6 @@ def plot_3d(image, threshold=-300):
 
     plt.show()
     
-    
 if __name__ == '__main__':
 
     #    INPUT_FOLDER = '/work/DataBowl3/stage1/stage1/'
@@ -155,27 +103,18 @@ if __name__ == '__main__':
     patients = os.listdir(INPUT_FOLDER)
     patients.sort()
     
-#    first_patient = load_scan(INPUT_FOLDER + patients[20])
-#    first_patient_pixels = get_pixels_hu(first_patient)
-#    plt.hist(first_patient_pixels.flatten(), bins=80, color='c')
-#    plt.xlabel("Hounsfield Units (HU)")
-#    plt.ylabel("Frequency")
-#    plt.show()
+    first_patient = load_scan(INPUT_FOLDER + patients[1])
+    first_patient_pixels = get_pixels_hu(first_patient)
+    plt.hist(first_patient_pixels.flatten(), bins=80, color='c')
+    plt.xlabel("Hounsfield Units (HU)")
+    plt.ylabel("Frequency")
+    plt.show()
 
-    case = load_scan(INPUT_FOLDER + patients[10])
+    case = load_scan(INPUT_FOLDER + patients[1])
     case_pixels= get_pixels_hu(case)
     
-    pix_resampled, spacing = resample(case_pixels, case, [1,1,1])
+#    pix_resampled, spacing = resample(case_pixels, case, [1,1,1])
     
-#    pix_resampled, spacing = resample(first_patient_pixels, first_patient, [1,1,1])
+    pix_resampled, spacing = resample(first_patient_pixels, first_patient, [1,1,1])
 
-    segmented_lungs = segment_lung_mask(pix_resampled, False)
-    segmented_lungs_fill = segment_lung_mask(pix_resampled, True)
 
-#    from mayavi import mlab
-    
-#    mlab.figure(bgcolor=(0, 0, 0), size=(400, 400))
-    
-#    src = mlab.pipeline.scalar_field(segmented_lungs)
-#    vol = mlab.pipeline.iso_surface(src, contours=[1,], color=(0.8, 0.7, 0.6))
-    

@@ -8,7 +8,7 @@ Created on Wed Dec 06 16:48:50 2017
 ### Read the data in a numpy 3D array ##########################################
 import os
 import numpy as np
-data = np.array([np.fromfile(os.path.join('mri_data', 'MRbrain.%i' % i),
+data = np.array([np.fromfile(os.path.join('/Users/dx100/Data/Kaggle/mri_data', 'MRbrain.%i' % i),
                                         dtype='>u2') for i in range(1, 110)])
 data.shape = (109, 256, 256)
 data = data.T
