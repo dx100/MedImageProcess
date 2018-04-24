@@ -1,5 +1,8 @@
 # do not include DSB2017, as it is the library downloaded.
 DSB2017
 
+# do not include .vscode
+.vscode
+
 # for the time being, don't git dx100, as I am not clear what it is about. I guess it is my version of DSB2017
 dx100
